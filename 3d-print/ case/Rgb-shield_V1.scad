@@ -1,26 +1,34 @@
 //Enter OpenSCAD code here.
  echo("Version:",version());
 r=100;
+// Рисовать плату или нет.
+PCB=1;
 // размеры платы
-A=43;
-B=62;
+A=48.26;
+B=59.69;
 H=25; //габаритная высота
 S=1.5; // толщина текстолита
+//размеры под винт
+Av=39.37;
+Bv=52.07;
+Sm=5.5; // отступ отверстий от переднего края
+Sb=3.81; // отступ отверстий с боков
 //стойки для платы
 Hp=7;
 //толщина стенок
-s=3;
+s=2;
 //стойки для крышки
 Ds=4;
 Hs=H+s+S;
 //размеры внутреннего объема
-Aa=A+7;
-Bb=B+7;
+Aa=A+2;
+Bb=B+2*Ds+2;
 
 //радиус кнопки
 Rp=6.5;
 // Высота стоек под плату
 Hss=11.6;
+// стойка под крышку
 module  rackb ( ) 
 { 
 
@@ -38,11 +46,12 @@ $fn=r);
     };
 
 }
+// стойка под плату
 module  rack ( x=0,y=0) 
 {   translate ([x, y, 0]) 
     difference() {
          
-cylinder (Hss, Ds/2, Ds/2, false, 
+cylinder (Hss, Ds*0.8, 0.8*Ds, false, 
 $fn=r);
     
       
@@ -74,18 +83,20 @@ union()
    translate([s, Bb+2*s-s, Hs])
    sphere(d=2*s, true, $fn=r); 
   }
-//cube([Aa+2*s, Bb+2*s, Hs+2*s] , false, $fn=r);
-//cylinder(5,12,12,true, $fn=r) ;
+
 } ;
 translate([s, s, s]) 
 cube([Aa, Bb, Hs+4*s],$fn=r);
 
 //отверстия под кнопки
-translate ([38.2,56.3,0])
+Xk=34.18+0.42+s+0.5;
+Yk=9.6+s+Ds+1+0.65;
+Yk2=20.52;
+translate ([Xk,Yk+Yk2+17.78,0])
 cylinder (10, Rp, Rp, true, $fn=r);
-translate ([38.2,38.4,0])
+translate ([Xk,Yk+Yk2,0])
 cylinder (10, Rp, Rp, true, $fn=r);
-translate ([38.2,18.1,0])
+translate ([Xk,Yk,0])
 cylinder (10, Rp, Rp, true, $fn=r);
 // Отверстия под питание
 translate ([0,49.7,15])
@@ -93,7 +104,7 @@ cube([10, 10, 10],$fn=r);
 translate ([0,19.7,20])
 cube([10, 20, 5],$fn=r);
 // отв. ИК приемник
-translate ([20,33,0])
+translate ([s+0.5+16,Ds+s+1+27,0])
 cube([6.1, 8.1, 10],$fn=r);
 } 
 // стойки для крышки
@@ -110,13 +121,18 @@ translate ([Ds/2+s, Bb-Ds/2+s, 0])
 rotate([0,0,-90]) 
 rackb ();
 
-rack (9,12);
-rack (9,63.7);
-rack (48.3,63.7);
-rack (48.3,12);
-
+translate ([Sm+s+0.5,s+Sb+Ds+1,0]){
+union (){
+rack (0,0);
+rack (0,52.07);
+rack (39.37,52.07);
+rack (39.37,0);
+}
+}
 // Импорт платы
-translate( [3.8, 8.5, 12.5 ]){
+if (PCB==1)
+    // 0.42 и 0.65 отступ 3 модели от нуля координат, 0.5 и 1 отступ от стенок
+translate( [s+0.42+0.5, s+Ds+1+0.65, 12.5 ]){
 difference () {
 rotate([0,0,0]){#import ( "RGBschildSOT223.stl",  convexity = 5);}
  
